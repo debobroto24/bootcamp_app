@@ -39,6 +39,7 @@ class _BlogsListScreenState extends ConsumerState<BlogsListScreen> {
               },
             )
           : const Center(child: CircularProgressIndicator()),
+          
     );
   }
 }

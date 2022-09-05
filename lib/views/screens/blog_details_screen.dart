@@ -1,5 +1,7 @@
+import 'package:bootcamp_app/controller/base/base_state.dart';
 import 'package:bootcamp_app/controller/blog/blog_controller.dart';
 import 'package:bootcamp_app/controller/blog/blog_details_controller.dart';
+import 'package:bootcamp_app/controller/blog/favorite_blog_controller.dart';
 import 'package:bootcamp_app/controller/blog/state/blog_state.dart';
 import 'package:bootcamp_app/model/blog_model.dart';
 import 'package:bootcamp_app/views/screens/create_update_blog_screen.dart';
@@ -15,10 +17,14 @@ class BlogDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _BlogDetailsScreenState extends ConsumerState<BlogDetailsScreen> {
+  late bool clicked = false;
+
   @override
   Widget build(BuildContext context) {
     final blogDetailsState = ref.watch(blogDetailsProvider);
-    final BlogModel? blogData = blogDetailsState is BlogDetailsSuccessState ? blogDetailsState.blogModel : null;
+    final BlogModel? blogData = blogDetailsState is BlogDetailsSuccessState
+        ? blogDetailsState.blogModel
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -35,10 +41,11 @@ class _BlogDetailsScreenState extends ConsumerState<BlogDetailsScreen> {
               Navigator.push(
                 context,
                 CupertinoPageRoute(
-                    builder: (context) => CreateUpdateBlogScreen(
-                          isCreate: false,
-                          blogModel: blogData,
-                        )),
+                  builder: (context) => CreateUpdateBlogScreen(
+                    isCreate: false,
+                    blogModel: blogData,
+                  ),
+                ),
               );
             },
             icon: const Icon(Icons.edit),
@@ -50,32 +57,79 @@ class _BlogDetailsScreenState extends ConsumerState<BlogDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.network(
-                    blogData!.image!,
-                    // 'https://picsum.photos/300',
-                    width: MediaQuery.of(context).size.width,
-                    height: 300,
-                    fit: BoxFit.cover,
+                  Stack(
+                    children: [
+                      Image.network(
+                        blogData!.image!,
+                        // 'https://picsum.photos/300',
+                        width: MediaQuery.of(context).size.width,
+                        height: 300,
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned(
+                        top: 10,
+                        right: 20,
+                        child: Consumer(
+                          builder: (BuildContext context, ref, _) {
+                            final blogState = ref.watch(favoriteBlogProvider);
+                            return IconButton(
+                              onPressed: () {
+                                // if (blogState is FavoriteBlogSuccessState) {
+                                setState(() {
+                                  clicked == true
+                                      ? clicked = false
+                                      : clicked = true;
+                                });
+                                ref
+                                    .read(favoriteBlogProvider.notifier)
+                                    .createFavoriteBlog(
+                                        id: blogData.id, is_favorite: "1");
+                                // }
+                                print("clicked");
+                              },
+                              icon: clicked == true
+                                  ? const Icon(
+                                      Icons.favorite,
+                                      color: Colors.red,
+                                    )
+                                  : const Icon(Icons.favorite_border,
+                                      color: Colors.white),
+                            );
+                          },
+                        ),
+                      )
+                    ],
                   ),
+                  // Image.network(
+                  //   blogData!.image!,
+                  //   // 'https://picsum.photos/300',
+                  //   width: MediaQuery.of(context).size.width,
+                  //   height: 300,
+                  //   fit: BoxFit.cover,
+                  // ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15, vertical: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10),
                         Text(
                           blogData.createdAt,
-                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                          style:
+                              const TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                         const SizedBox(height: 10),
                         Text(
                           blogData.title!,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 5),
                         Text(
                           blogData.subtitle!,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 5),
                         Text(
